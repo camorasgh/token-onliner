@@ -4,6 +4,7 @@ import time
 import threading
 import requests
 from colorama import Fore, Style
+import random
 
 def load_tokens(file_path):
     with open(file_path, 'r') as file:
@@ -41,7 +42,55 @@ def send_heartbeat(ws):
     heartbeat_payload = {"op": 1, "d": None}
     ws.send(json.dumps(heartbeat_payload))
 
-def manage_token(token, status_index, activity_index, config):
+def get_random_timestamp():
+    current_time = int(time.time() * 1000)
+    random_past = random.randint(300000, 7200000)
+    return {"start": current_time - random_past}
+
+def get_display_name(activity):
+    if activity["type"] == 2:
+        return f"{activity['details']} - {activity['state']}"
+    elif activity["type"] == 4:
+        emoji = activity.get("emoji", "")
+        return f"{emoji} {activity['state']}"
+    elif "details" in activity:
+        return activity["details"]
+    elif "name" in activity:
+        return activity["name"]
+    return "Unknown"
+
+def get_random_activity(config):
+    activity_type = random.choices(
+        ["game", "spotify", "custom"],
+        weights=[0.7, 0.2, 0.1]
+    )[0]
+
+    if activity_type == "spotify":
+        activity = config['spotify'].copy()
+        current_time = int(time.time() * 1000)
+        activity["timestamps"] = {
+            "start": current_time,
+            "end": current_time + activity["duration_ms"]
+        }
+        activity["party"] = {
+            "id": f"spotify:{random.randint(100000000, 999999999)}"
+        }
+        activity["sync_id"] = "".join(random.choices("0123456789abcdef", k=32))
+        activity["flags"] = 48
+        activity["session_id"] = "".join(random.choices("0123456789abcdef", k=32))
+    elif activity_type == "custom":
+        activity = config['custom_status'].copy()
+    else:
+        activity = random.choice(config['activities']).copy()
+        activity["timestamps"] = get_random_timestamp()
+        activity["created_at"] = int(time.time() * 1000)
+        if activity.get("application_id"):
+            activity["flags"] = 0
+            activity["id"] = str(random.randint(100000000000000000, 999999999999999999))
+    
+    return activity
+
+def manage_token(token, config):
     if not check_token(token):
         print(f"{Fore.RED}[-]{Style.RESET_ALL} Token Invalid: {token[:6]}...")
         return
@@ -56,22 +105,8 @@ def manage_token(token, status_index, activity_index, config):
         event = json.loads(ws.recv())
         heartbeat_interval = event['d']['heartbeat_interval'] / 1000
 
-        status = config['statuses'][status_index % len(config['statuses'])]
-        
-        if activity_index % 4 == 3:
-            activity = {
-                "type": 4,
-                "state": config['custom_status'],
-                "name": "Custom Status"
-            }
-        elif activity_index % 4 == 0:
-            activity = config['spotify'].copy()
-            activity["timestamps"] = {
-                "start": int(time.time() * 1000),
-                "end": int(time.time() * 1000) + config['spotify']['duration_ms']
-            }
-        else:
-            activity = config['activities'][activity_index % len(config['activities'])]
+        status = random.choice(config['statuses'])
+        activity = get_random_activity(config)
 
         identify_payload = {
             "op": 2,
@@ -114,7 +149,7 @@ def manage_token(token, status_index, activity_index, config):
         }
         ws.send(json.dumps(identify_payload))
 
-        display_name = activity.get("details", activity.get("name", "Unknown"))
+        display_name = get_display_name(activity)
         print(f"{Fore.GREEN}[+]{Style.RESET_ALL} {token[:6]}... | Onlined | {status} | {display_name}")
         
         retries = 0
@@ -125,9 +160,13 @@ def manage_token(token, status_index, activity_index, config):
                 time.sleep(heartbeat_interval)
                 send_heartbeat(ws)
                 
-                if "timestamps" in activity:
+                if activity["type"] == 2:
                     activity["timestamps"]["start"] = int(time.time() * 1000)
                     activity["timestamps"]["end"] = activity["timestamps"]["start"] + config['spotify']['duration_ms']
+                    activity["sync_id"] = "".join(random.choices("0123456789abcdef", k=32))
+                elif activity["type"] == 0 and random.random() < 0.1:
+                    activity["timestamps"] = get_random_timestamp()
+                    status = random.choice(config['statuses'])
                 
                 presence_update = {
                     "op": 3,
@@ -151,11 +190,11 @@ def manage_token(token, status_index, activity_index, config):
     except websocket.WebSocketException:
         print(f"{Fore.RED}[-]{Style.RESET_ALL} Connection Lost: {token[:6]}...")
         time.sleep(5)
-        manage_token(token, status_index, activity_index, config)
+        manage_token(token, config)
     except Exception as e:
         print(f"{Fore.YELLOW}[-]{Style.RESET_ALL} Error: {str(e)}")
         time.sleep(5)
-        manage_token(token, status_index, activity_index, config)
+        manage_token(token, config)
     finally:
         try:
             ws.close()
@@ -166,8 +205,8 @@ if __name__ == "__main__":
     config = load_config("config.json")
     tokens = load_tokens("tokens.txt")
     threads = []
-    for i, token in enumerate(tokens):
-        thread = threading.Thread(target=manage_token, args=(token, i, i, config))
+    for token in tokens:
+        thread = threading.Thread(target=manage_token, args=(token, config))
         threads.append(thread)
         thread.start()
         time.sleep(0.5)
