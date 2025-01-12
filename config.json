@@ -1,0 +1,26 @@
+{
+    "activities": [
+        {"name": "Minecraft", "type": 0},
+        {"name": "League of Legends", "type": 0},
+        {"name": "Roblox", "type": 0},
+        {"name": "Twitch", "type": 0},
+        {"name": "YouTube", "type": 0},
+        {"name": "Visual Studio Code", "type": 0},
+        {"name": "Netflix", "type": 0},
+        {"name": "Valorant", "type": 0},
+        {"name": "Fortnite", "type": 0},
+        {"name": "GTA V", "type": 0}
+    ],
+    "spotify": {
+        "type": 2,
+        "name": "Spotify",
+        "details": "Ja Mann!",
+        "state": "Bonez MC, RAF Camora",
+        "assets": {
+            "large_image": "spotify:ab67616d0000b273ebd4538e6787f7d7950d663d"
+        },
+        "duration_ms": 188000
+    },
+    "custom_status": "Working on something cool!",
+    "statuses": ["online", "idle", "dnd"]
+}
