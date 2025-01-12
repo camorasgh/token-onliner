@@ -1,15 +1,49 @@
 {
     "activities": [
-        {"name": "Minecraft", "type": 0},
-        {"name": "League of Legends", "type": 0},
-        {"name": "Roblox", "type": 0},
-        {"name": "Twitch", "type": 0},
-        {"name": "YouTube", "type": 0},
-        {"name": "Visual Studio Code", "type": 0},
-        {"name": "Netflix", "type": 0},
-        {"name": "Valorant", "type": 0},
-        {"name": "Fortnite", "type": 0},
-        {"name": "GTA V", "type": 0}
+        {
+            "name": "Visual Studio Code",
+            "type": 0,
+            "application_id": "383226320970055681",
+            "details": "Editing main.py",
+            "state": "Workspace: Project",
+            "assets": {
+                "large_image": "565945350645481492",
+                "large_text": "Visual Studio Code",
+                "small_image": "565945770067623946",
+                "small_text": "Python"
+            }
+        },
+        {
+            "name": "Counter Strike 2",
+            "type": 0,
+            "application_id": "1158877933042143272",
+            "assets": {
+                "large_image": "cs2_logo",
+                "large_text": "Counter Strike 2"
+            }
+        },
+        {
+            "name": "Fortnite",
+            "type": 0,
+            "application_id": "432980957394370572",
+            "details": "Battle Royale - In Lobby",
+            "state": "Playing Solo (1 of 1)",
+            "assets": {
+                "large_image": "432980957394370572",
+                "small_image": "small",
+                "large_text": "Fortnite",
+                "small_text": "Level 37"
+            }
+        },
+        {
+            "name": "VALORANT",
+            "type": 0,
+            "application_id": "700136079562375258",
+            "assets": {
+                "large_image": "valorant",
+                "large_text": "VALORANT"
+            }
+        }
     ],
     "spotify": {
         "type": 2,
@@ -21,6 +55,10 @@
         },
         "duration_ms": 188000
     },
-    "custom_status": "Working on something cool!",
+    "custom_status": {
+        "type": 4,
+        "state": "Working on something cool!",
+        "emoji": "💻"
+    },
     "statuses": ["online", "idle", "dnd"]
 }
